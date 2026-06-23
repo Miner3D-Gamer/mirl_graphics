@@ -33,6 +33,9 @@ pub mod buffer_traits;
 /// Stuff that has not yet been sorted
 pub mod misc;
 
+/// Color presets
+pub mod colors;
+
 #[cfg(feature = "image")]
 /// Support for the `image` crate
 pub mod imagery;

@@ -69,11 +69,7 @@ pub fn adjust_brightness_hsl_of_rgb(color: u32, change: f32) -> u32 {
 #[must_use]
 #[allow(clippy::cast_possible_truncation)]
 /// Convert hsl space to rgb space
-pub const fn hsl_to_rgb_f32(
-    hue: f32,
-    saturation: f32,
-    lightness: f32,
-) -> (f32, f32, f32) {
+pub const fn hsl_to_rgb_f32(hue: f32, saturation: f32, lightness: f32) -> (f32, f32, f32) {
     let c = (1.0 - (2.0 * lightness - 1.0).abs()) * saturation;
     let x = c * (1.0 - ((hue / 60.0) % 2.0 - 1.0).abs());
     let m = lightness - c / 2.0;
@@ -132,11 +128,7 @@ pub const fn rgb_to_hsl(r: u8, g: u8, b: u8) -> (f32, f32, f32) {
 #[allow(clippy::cast_possible_truncation)]
 #[allow(clippy::cast_sign_loss)]
 /// Convert hsl space to rgb space
-pub fn hsl_to_rgb_u32(
-    hue: f32,
-    saturation: f32,
-    lightness: f32,
-) -> (u32, u32, u32) {
+pub fn hsl_to_rgb_u32(hue: f32, saturation: f32, lightness: f32) -> (u32, u32, u32) {
     let h_norm = hue / 360.0;
     let s_norm = saturation / 100.0;
     let l_norm = lightness / 100.0;
@@ -233,12 +225,7 @@ pub fn hsl_to_rgb_u32(
 #[allow(clippy::cast_possible_truncation)]
 #[allow(clippy::cast_possible_wrap)]
 /// Shift the color (hue) of rgb
-pub fn shift_color_rgb(
-    red: u8,
-    green: u8,
-    blue: u8,
-    hue_shift: f32,
-) -> (u32, u32, u32) {
+pub fn shift_color_rgb(red: u8, green: u8, blue: u8, hue_shift: f32) -> (u32, u32, u32) {
     let (hue, saturation, lightness) = rgb_to_hsl(red, green, blue);
 
     let new_h = (hue + hue_shift) % 360.0;
@@ -270,12 +257,7 @@ pub fn shift_color_rgb(
 
 #[must_use]
 /// Shift the hue of rgb, isn't there another function that does the exact same?
-pub fn shift_hue_rgb(
-    r: u8,
-    g: u8,
-    b: u8,
-    hue_shift_degrees: f32,
-) -> (u32, u32, u32) {
+pub fn shift_hue_rgb(r: u8, g: u8, b: u8, hue_shift_degrees: f32) -> (u32, u32, u32) {
     // Convert to floating point RGB
     let mut hsv = rgb_to_hsl(r, g, b);
 
@@ -306,8 +288,7 @@ pub fn shift_color_u32(color: u32, hue_shift: f32) -> u32 {
     let green = (color >> 8) & 0xFF;
     let blue = color & 0xFF;
 
-    let (r_new, g_new, b_new) =
-        shift_color_rgb(red as u8, green as u8, blue as u8, hue_shift);
+    let (r_new, g_new, b_new) = shift_color_rgb(red as u8, green as u8, blue as u8, hue_shift);
 
     (r_new, g_new, b_new, alpha).pack_rgba_u32()
 }
@@ -319,8 +300,7 @@ pub fn shift_color_u32(color: u32, hue_shift: f32) -> u32 {
 pub const fn adjust_brightness_fast(color: u32, x: i32) -> u32 {
     // Extract color components
     let t: (u32, u32, u32) = (color).unpack_u32_rgb();
-    let (red, green, blue): (i32, i32, i32) =
-        (t.0 as i32, t.1 as i32, t.2 as i32);
+    let (red, green, blue): (i32, i32, i32) = (t.0 as i32, t.1 as i32, t.2 as i32);
 
     // Calculate new values with clamping
     let r_new = (red + x).clamp(0, 255) as u32;
@@ -351,12 +331,11 @@ pub fn desaturate_fast(color: u32, amount: f32) -> u32 {
     );
 
     // Interpolate between color and gray based on amount (0.0 to 1.0)
-    let r_new = core::f32::math::mul_add(red, 1.0 - amount, gray * amount)
-        .clamp(0.0, 255.0) as u32;
-    let g_new = core::f32::math::mul_add(green, 1.0 - amount, gray * amount)
-        .clamp(0.0, 255.0) as u32;
-    let b_new = core::f32::math::mul_add(blue, 1.0 - amount, gray * amount)
-        .clamp(0.0, 255.0) as u32;
+    let r_new = core::f32::math::mul_add(red, 1.0 - amount, gray * amount).clamp(0.0, 255.0) as u32;
+    let g_new =
+        core::f32::math::mul_add(green, 1.0 - amount, gray * amount).clamp(0.0, 255.0) as u32;
+    let b_new =
+        core::f32::math::mul_add(blue, 1.0 - amount, gray * amount).clamp(0.0, 255.0) as u32;
 
     // Recombine
     (r_new << 16) | (g_new << 8) | b_new
@@ -382,8 +361,7 @@ pub fn rasterize_svg(
     };
 
     // Create a pixmap with desired size (from SVG's size)
-    let mut pixmap =
-        resvg::tiny_skia::Pixmap::new(width, height).ok_or(None)?; // ok_or(None) is actually pretty funny. clippy! Time for you to add another rule!
+    let mut pixmap = resvg::tiny_skia::Pixmap::new(width, height).ok_or(None)?; // ok_or(None) is actually pretty funny. clippy! Time for you to add another rule!
 
     // Render the SVG
     resvg::render(
@@ -400,25 +378,17 @@ pub fn rasterize_svg(
 /// To use this function, enable the "`svg`" feature
 /// Converts a `resvg::tiny_skia::Pixmap` to a `mirl::Buffer`
 #[must_use]
-pub fn pixmap_to_buffer(
-    pixmap: &resvg::tiny_skia::Pixmap,
-) -> mirl_buffer::Buffer {
+pub fn pixmap_to_buffer(pixmap: &resvg::tiny_skia::Pixmap) -> mirl_buffer::Buffer {
     let mut data = Vec::new();
     for y in 0..pixmap.height() {
         for x in 0..pixmap.width() {
             let color = unsafe { pixmap.pixel(x, y).unwrap_unchecked() };
-            data.push(
-                (color.red(), color.green(), color.blue(), color.alpha())
-                    .pack_rgba_u32(),
-            );
+            data.push((color.red(), color.green(), color.blue(), color.alpha()).pack_rgba_u32());
         }
     }
     unsafe {
-        mirl_buffer::Buffer::new(
-            (pixmap.width() as usize, pixmap.height() as usize),
-            data,
-        )
-        .unwrap_unchecked()
+        mirl_buffer::Buffer::new((pixmap.width() as usize, pixmap.height() as usize), data)
+            .unwrap_unchecked()
     }
 }
 
@@ -723,10 +693,7 @@ pub const fn advance_color(red: u8, green: u8, blue: u8) -> (u8, u8, u8) {
 #[must_use]
 #[cfg(feature = "std")]
 /// This is quite expensive
-pub fn get_unused_color(
-    buffer: &[u8],
-    current_color: (u8, u8, u8),
-) -> (u8, u8, u8) {
+pub fn get_unused_color(buffer: &[u8], current_color: (u8, u8, u8)) -> (u8, u8, u8) {
     let mut current_color = current_color;
     let mut unique_colors = HashSet::new();
     for i in buffer.chunks_exact(4) {
@@ -735,8 +702,7 @@ pub fn get_unused_color(
         }
     }
     while unique_colors.contains(&current_color) {
-        current_color =
-            advance_color(current_color.0, current_color.1, current_color.2);
+        current_color = advance_color(current_color.0, current_color.1, current_color.2);
     }
     current_color
 }
@@ -783,11 +749,7 @@ pub fn get_unused_color(
 #[must_use]
 /// Interpolate between 2 numbers linearly
 /// progress should be from 0 to 255
-pub const fn interpolate_color_rgb_u32(
-    from: u32,
-    to: u32,
-    progress: u32,
-) -> u32 {
+pub const fn interpolate_color_rgb_u32(from: u32, to: u32, progress: u32) -> u32 {
     // Convert progress to fixed-point (8.8 format)
     //let progress_fixed = (progress * 256.0) as u32;
     let inv_progress = 256 - progress;
@@ -847,4 +809,14 @@ pub fn switch_colors_in_list<T: Fn(u32) -> u32>(list: &mut [u32], switch: T) {
     for color in list {
         *color = switch(*color);
     }
+}
+#[must_use]
+/// Turn a hex string into a u32 value
+pub fn hex_to_number(hex: &str) -> Option<u32> {
+    u32::from_str_radix(hex, 16).ok()
+}
+#[must_use]
+/// Turn a u32 into a hex string
+pub fn color_to_hex(num: u32) -> String {
+    format!("{num:x}")
 }
