@@ -99,6 +99,28 @@ pub const fn rgba_alpha(color: u32) -> u32 {
 pub const fn pack_rgba_u32(r: u32, g: u32, b: u32, a: u32) -> u32 {
     r << 24 | g << 16 | b << 8 | a
 }
+const impl<T: const IntoColor + Copy> PackChannelsIntoColor for [T; 1] {
+    fn pack_argb_u32(self) -> u32 {
+        (self[0],).pack_argb_u32()
+    }
+    fn pack_bgra_u32(self) -> u32 {
+        (self[0],).pack_bgra_u32()
+    }
+    fn pack_rgba_u32(self) -> u32 {
+        (self[0],).pack_rgba_u32()
+    }
+}
+const impl<T: const IntoColor + Copy> PackChannelsIntoColor for [T; 2] {
+    fn pack_argb_u32(self) -> u32 {
+        (self[0], self[1]).pack_argb_u32()
+    }
+    fn pack_bgra_u32(self) -> u32 {
+        (self[0], self[1]).pack_bgra_u32()
+    }
+    fn pack_rgba_u32(self) -> u32 {
+        (self[0], self[1]).pack_rgba_u32()
+    }
+}
 const impl<T: const IntoColor + Copy> PackChannelsIntoColor for [T; 4] {
     fn pack_argb_u32(self) -> u32 {
         (self[0], self[1], self[2], self[3]).pack_argb_u32()
@@ -150,7 +172,64 @@ const impl<T: const IntoColor + Copy> PackChannelsIntoColor for (T, T, T, T) {
         )
     }
 }
-// TODO: Does setting the alpha channel to 255 impact performance?
+#[macro_export]
+/// Turn the input into a u32 color
+///
+/// Inputs amount:
+/// 1: Grayscale
+/// 2: Grayscale + Alpha
+/// 3: RGB
+/// 4: RGBA
+///
+/// # Panics
+/// When the input values don't
+macro_rules! rgb {
+    ($v:expr) => {
+        ($crate::u32_color_casting::check_color($v),).pack_argb_u32()
+    };
+    ($r:expr, $g:expr) => {
+        (
+            $crate::u32_color_casting::check_color($r),
+            $crate::u32_color_casting::check_color($g),
+        )
+            .pack_argb_u32()
+    };
+    ($r:expr, $g:expr, $b:expr) => {
+        (
+            $crate::u32_color_casting::check_color($r),
+            $crate::u32_color_casting::check_color($g),
+            $crate::u32_color_casting::check_color($b),
+        )
+            .pack_argb_u32()
+    };
+    ($r:expr, $g:expr, $b:expr, $a:expr) => {
+        (
+            $crate::u32_color_casting::check_color($r),
+            $crate::u32_color_casting::check_color($g),
+            $crate::u32_color_casting::check_color($b),
+            $crate::u32_color_casting::check_color($a),
+        )
+            .pack_argb_u32()
+    };
+}
+#[must_use]
+/// Check value isn't negative
+///
+/// # Panics
+/// When the value doesn't fit into u8
+pub const fn check_color<T: [const] TryInto<u32> + [const] std::marker::Destruct + [const] Clone>(
+    v: T,
+) -> u32
+where
+    <T as std::convert::TryInto<u32>>::Error: [const] std::marker::Destruct,
+{
+    if v.clone().try_into().is_err() {
+        panic!("negative not allowed")
+    } else {
+        // Safety: What type can convert into u8 but not u32?
+        unsafe { v.try_into().unwrap_unchecked() }
+    }
+}
 const impl<T: const IntoColor + Copy> PackChannelsIntoColor for (T, T, T) {
     #[inline(always)]
     fn pack_rgba_u32(self) -> u32 {
@@ -158,13 +237,13 @@ const impl<T: const IntoColor + Copy> PackChannelsIntoColor for (T, T, T) {
             self.0.into_color(),
             self.1.into_color(),
             self.2.into_color(),
-            0,
+            255,
         )
     }
     #[inline(always)]
     fn pack_argb_u32(self) -> u32 {
         pack_rgba_u32(
-            0,
+            255,
             self.0.into_color(),
             self.1.into_color(),
             self.2.into_color(),
@@ -176,11 +255,68 @@ const impl<T: const IntoColor + Copy> PackChannelsIntoColor for (T, T, T) {
             self.2.into_color(),
             self.1.into_color(),
             self.0.into_color(),
-            0,
+            255,
         )
     }
 }
-
+const impl<T: const IntoColor + Copy> PackChannelsIntoColor for (T, T) {
+    #[inline(always)]
+    fn pack_rgba_u32(self) -> u32 {
+        pack_rgba_u32(
+            self.0.into_color(),
+            self.0.into_color(),
+            self.0.into_color(),
+            self.1.into_color(),
+        )
+    }
+    #[inline(always)]
+    fn pack_argb_u32(self) -> u32 {
+        pack_rgba_u32(
+            self.1.into_color(),
+            self.0.into_color(),
+            self.0.into_color(),
+            self.0.into_color(),
+        )
+    }
+    #[inline(always)]
+    fn pack_bgra_u32(self) -> u32 {
+        pack_rgba_u32(
+            self.0.into_color(),
+            self.0.into_color(),
+            self.0.into_color(),
+            self.1.into_color(),
+        )
+    }
+}
+const impl<T: const IntoColor + Copy> PackChannelsIntoColor for (T,) {
+    #[inline(always)]
+    fn pack_rgba_u32(self) -> u32 {
+        pack_rgba_u32(
+            self.0.into_color(),
+            self.0.into_color(),
+            self.0.into_color(),
+            255,
+        )
+    }
+    #[inline(always)]
+    fn pack_argb_u32(self) -> u32 {
+        pack_rgba_u32(
+            255,
+            self.0.into_color(),
+            self.0.into_color(),
+            self.0.into_color(),
+        )
+    }
+    #[inline(always)]
+    fn pack_bgra_u32(self) -> u32 {
+        pack_rgba_u32(
+            self.0.into_color(),
+            self.0.into_color(),
+            self.0.into_color(),
+            255,
+        )
+    }
+}
 /// Pack the given individual colors into a single u32 color
 pub const trait PackChannelsIntoColor {
     #[must_use]
@@ -200,9 +336,7 @@ pub const trait PackChannelsIntoColor {
     fn pack_bgra_u32(self) -> u32;
 }
 /// Unpack the single u32 into the individual channels
-pub const trait UnpackColorIntoChannels<T: Copy>:
-    std::marker::Sized
-{
+pub const trait UnpackColorIntoChannels<T: Copy>: std::marker::Sized {
     #[must_use]
     /// Unpack a u32 color into its R G B A channels
     fn unpack_u32_rgba(self) -> (T, T, T, T);
@@ -219,9 +353,7 @@ pub const trait UnpackColorIntoChannels<T: Copy>:
         (x.0, x.1, x.2)
     }
 }
-const impl<T: const FromColorChannel + Copy> UnpackColorIntoChannels<T>
-    for u32
-{
+const impl<T: const FromColorChannel + Copy> UnpackColorIntoChannels<T> for u32 {
     #[inline(always)]
     fn unpack_u32_rgba(self) -> (T, T, T, T) {
         (
@@ -290,25 +422,20 @@ pub const trait SwitchColorFormat {
 const impl SwitchColorFormat for u32 {
     #[inline(always)]
     fn switch_from_argb_to_rgba(self) -> Self {
-        <Self as UnpackColorIntoChannels<Self>>::unpack_u32_argb(self)
-            .pack_rgba_u32()
+        <Self as UnpackColorIntoChannels<Self>>::unpack_u32_argb(self).pack_rgba_u32()
     }
     #[inline(always)]
     fn switch_from_rgba_to_argb(self) -> Self {
-        <Self as UnpackColorIntoChannels<Self>>::unpack_u32_rgba(self)
-            .pack_argb_u32()
+        <Self as UnpackColorIntoChannels<Self>>::unpack_u32_rgba(self).pack_argb_u32()
     }
     #[inline(always)]
     fn switch_from_rgba_to_bgra(self) -> Self {
-        <Self as UnpackColorIntoChannels<Self>>::unpack_u32_rgba(self)
-            .pack_bgra_u32()
+        <Self as UnpackColorIntoChannels<Self>>::unpack_u32_rgba(self).pack_bgra_u32()
     }
 }
 
 /// A trait for changing or retrieving a single channel of a color
-pub const trait ColorManipulation<T: IntoColor>:
-    ColorManipulationWithoutInput
-{
+pub const trait ColorManipulation<T: IntoColor>: ColorManipulationWithoutInput {
     #[must_use]
     /// Set the alpha channel
     fn with_alpha(self, alpha: T) -> Self;
@@ -432,26 +559,22 @@ const impl ColorManipulationWithoutInput for u32 {
 const impl<T: [const] IntoColor> ColorManipulation<T> for u32 {
     #[inline(always)]
     fn with_alpha(self, alpha: T) -> Self {
-        (self.red(), self.green(), self.blue(), alpha.into_color())
-            .pack_rgba_u32()
+        (self.red(), self.green(), self.blue(), alpha.into_color()).pack_rgba_u32()
     }
 
     #[inline(always)]
     fn with_red(self, red: T) -> Self {
-        (red.into_color(), self.green(), self.blue(), self.alpha())
-            .pack_rgba_u32()
+        (red.into_color(), self.green(), self.blue(), self.alpha()).pack_rgba_u32()
     }
 
     #[inline(always)]
     fn with_green(self, green: T) -> Self {
-        (self.red(), green.into_color(), self.blue(), self.alpha())
-            .pack_rgba_u32()
+        (self.red(), green.into_color(), self.blue(), self.alpha()).pack_rgba_u32()
     }
 
     #[inline(always)]
     fn with_blue(self, blue: T) -> Self {
-        (self.red(), self.green(), blue.into_color(), self.alpha())
-            .pack_rgba_u32()
+        (self.red(), self.green(), blue.into_color(), self.alpha()).pack_rgba_u32()
     }
 
     #[inline(always)]

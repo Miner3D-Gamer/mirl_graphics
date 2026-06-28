@@ -13,6 +13,9 @@
 #![feature(core_float_math)]
 #![feature(const_cmp)]
 #![feature(const_convert)]
+#![feature(const_result_unwrap_unchecked)]
+#![feature(const_destruct)]
+#![feature(const_clone)]
 #![cfg_attr(feature = "image", feature(core_intrinsics))]
 
 /// Basic u32 manipulation
