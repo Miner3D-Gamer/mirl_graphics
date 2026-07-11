@@ -10,33 +10,26 @@ default = ["std"]
 all = ["image", "binary_data_plugin"]
 _checking = ["all"]
 std = []
-
 # Does nothing by itself. Needs another codec or enum flag to do something
 mirl_derive = ["dep:mirl_derive"]
 # Compatibility with ffi
 c_compatible = ["mirl_derive"]
 # Enables all codecs
 all_codecs = ["serde", "bitcode", "wincode", "compactly", "zerocopy"]
-# # All enum extensions
-# all_enum_extensions = ["strum", "enum_ext"]
-
+# # All enum extensions# all_enum_extensions = ["strum", "enum_ext"]
 # Codec stuff
 serde = ["dep:serde", "mirl_derive"]
 bitcode = ["dep:bitcode", "mirl_derive"]
 wincode = ["dep:wincode", "mirl_derive"]
 compactly = ["dep:compactly", "mirl_derive"]
 zerocopy = ["dep:zerocopy", "mirl_derive"]
-
 # Enum extensions
 strum = ["dep:strum", "mirl_derive"]
 enum_ext = ["dep:enum_ext", "mirl_derive"]
-
 binary_data_plugin = ["dep:inventory", "mirl_collections"]
-
 # SVG/resvg supports
 svg = ["dep:resvg"]
 # mirl_buffer = ["dep:mirl_buffer"]
-
 image = ["dep:image"]
 random = ["dep:rand", "std"]
 
@@ -49,27 +42,22 @@ compactly = { version = "0.1", optional = true }
 enum_ext = { version = "0.6", optional = true, default-features = false }
 # graphics & render
 image = { version = "0.25", optional = true, default-features = false }
-
 # BinaryData
 inventory = { version = "0.3.24", optional = true }
 # mirl_extensions_conversion = { version = "0.0.0-alpha" }
 # mirl_input = { version = "0.0.0-alpha", optional = true }
 mirl_buffer = { version = "0.0.0-alpha" }
 mirl_collections = { version = "0.0.0-alpha", optional = true }
-
 mirl_derive = { version = "0.0.0-alpha", optional = true }
-
 # For random numbers
 rand = { version = "0.10", optional = true, default-features = false, features = [
     "thread_rng",
 ] }
-
 # Rasterize SVG
 resvg = { version = "0.47", optional = true, default-features = false }
-serde = { version = "1", optional = true, default-features = false, features = [
+serde = { version = "1.0", optional = true, default-features = false, features = [
     "derive",
 ] }
-
 # Enum functionality
 strum = { version = "0.28", optional = true, default-features = false, features = [
     "derive",
