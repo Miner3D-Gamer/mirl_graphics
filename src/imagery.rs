@@ -1,9 +1,7 @@
 use image::{GenericImage, GenericImageView};
 use mirl_buffer::Buffer;
 
-use crate::u32_color_casting::{
-    PackChannelsIntoColor, UnpackColorIntoChannels,
-};
+use crate::u32_color_casting::{PackChannelsIntoColor, UnpackColorIntoChannels};
 
 /// Convert a [u32] argb format into an [`image::Rgba<u8>`]
 #[must_use]
@@ -54,8 +52,7 @@ pub fn draw_texture_into_image(
     texture_y: u16,
     texture: &image::DynamicImage,
 ) {
-    if core::intrinsics::unlikely(texture.width() == 0 || texture.height() == 0)
-    {
+    if core::intrinsics::unlikely(texture.width() == 0 || texture.height() == 0) {
         return;
     }
 
@@ -68,8 +65,7 @@ pub fn draw_texture_into_image(
         for y in texture_y..texture_y + texture_height {
             let texture_uv_y = (f32::from(y - texture_y) / scaling_y) as u32;
 
-            if texture_uv_x < texture.width() && texture_uv_y < texture.height()
-            {
+            if texture_uv_x < texture.width() && texture_uv_y < texture.height() {
                 let pixel = texture.get_pixel(texture_uv_x, texture_uv_y);
                 image.put_pixel(u32::from(x), u32::from(y), pixel);
             }
@@ -81,11 +77,7 @@ pub fn draw_texture_into_image(
 #[allow(clippy::cast_possible_truncation)]
 #[allow(clippy::cast_sign_loss)]
 /// Set the image size and fill the new space with nothing
-pub fn set_image_size(
-    image: &image::DynamicImage,
-    width: u32,
-    height: u32,
-) -> image::DynamicImage {
+pub fn set_image_size(image: &image::DynamicImage, width: u32, height: u32) -> image::DynamicImage {
     //not resize, added pixels by new size should be empty
     let mut img = create_empty_image(width, height);
     draw_texture_into_image(

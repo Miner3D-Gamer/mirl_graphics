@@ -1,9 +1,6 @@
 use mirl_buffer::prelude::*;
 
-use crate::{
-    misc::switch_colors_in_list,
-    u32_color_casting::{SwitchColorFormat, UnpackColorIntoChannels},
-};
+use crate::{misc::switch_colors_in_list, u32_color_casting::UnpackColorIntoChannels};
 
 /// Turn the Buffer into a Vec of u8
 pub const trait BufferToVec {
@@ -56,18 +53,21 @@ pub const trait SwitchInternalFormat {
 
 impl<T: BufferData> SwitchInternalFormat for T {
     fn switch_red_and_blue(&mut self) {
-        switch_colors_in_list(self.data_mut(), |color| {
-            color.switch_from_rgba_to_bgra()
-        });
+        switch_colors_in_list(
+            self.data_mut(),
+            super::u32_color_casting::SwitchColorFormat::switch_from_rgba_to_bgra,
+        );
     }
     fn switch_from_rgba_to_argb(&mut self) {
-        switch_colors_in_list(self.data_mut(), |color| {
-            color.switch_from_rgba_to_argb()
-        });
+        switch_colors_in_list(
+            self.data_mut(),
+            super::u32_color_casting::SwitchColorFormat::switch_from_rgba_to_argb,
+        );
     }
     fn switch_from_argb_to_rgba(&mut self) {
-        switch_colors_in_list(self.data_mut(), |color| {
-            color.switch_from_argb_to_rgba()
-        });
+        switch_colors_in_list(
+            self.data_mut(),
+            super::u32_color_casting::SwitchColorFormat::switch_from_argb_to_rgba,
+        );
     }
 }

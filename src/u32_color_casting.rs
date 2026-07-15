@@ -99,6 +99,7 @@ pub const fn rgba_alpha(color: u32) -> u32 {
 pub const fn pack_rgba_u32(r: u32, g: u32, b: u32, a: u32) -> u32 {
     r << 24 | g << 16 | b << 8 | a
 }
+#[allow(clippy::tuple_array_conversions)]
 const impl<T: const IntoColor + Copy> PackChannelsIntoColor for [T; 1] {
     fn pack_argb_u32(self) -> u32 {
         (self[0],).pack_argb_u32()
@@ -110,6 +111,7 @@ const impl<T: const IntoColor + Copy> PackChannelsIntoColor for [T; 1] {
         (self[0],).pack_rgba_u32()
     }
 }
+#[allow(clippy::tuple_array_conversions)]
 const impl<T: const IntoColor + Copy> PackChannelsIntoColor for [T; 2] {
     fn pack_argb_u32(self) -> u32 {
         (self[0], self[1]).pack_argb_u32()
@@ -121,6 +123,7 @@ const impl<T: const IntoColor + Copy> PackChannelsIntoColor for [T; 2] {
         (self[0], self[1]).pack_rgba_u32()
     }
 }
+#[allow(clippy::tuple_array_conversions)]
 const impl<T: const IntoColor + Copy> PackChannelsIntoColor for [T; 4] {
     fn pack_argb_u32(self) -> u32 {
         (self[0], self[1], self[2], self[3]).pack_argb_u32()
@@ -132,6 +135,7 @@ const impl<T: const IntoColor + Copy> PackChannelsIntoColor for [T; 4] {
         (self[0], self[1], self[2], self[3]).pack_rgba_u32()
     }
 }
+#[allow(clippy::tuple_array_conversions)]
 const impl<T: const IntoColor + Copy> PackChannelsIntoColor for [T; 3] {
     fn pack_argb_u32(self) -> u32 {
         (self[0], self[1], self[2]).pack_argb_u32()
@@ -223,12 +227,9 @@ pub const fn check_color<T: [const] TryInto<u32> + [const] std::marker::Destruct
 where
     <T as std::convert::TryInto<u32>>::Error: [const] std::marker::Destruct,
 {
-    if v.clone().try_into().is_err() {
-        panic!("negative not allowed")
-    } else {
-        // Safety: What type can convert into u8 but not u32?
-        unsafe { v.try_into().unwrap_unchecked() }
-    }
+    assert!(v.clone().try_into().is_ok(), "negative not allowed");
+    // Safety: What type can convert into u8 but not u32?
+    unsafe { v.try_into().unwrap_unchecked() }
 }
 const impl<T: const IntoColor + Copy> PackChannelsIntoColor for (T, T, T) {
     #[inline(always)]

@@ -696,7 +696,7 @@ pub const fn advance_color(red: u8, green: u8, blue: u8) -> (u8, u8, u8) {
 pub fn get_unused_color(buffer: &[u8], current_color: (u8, u8, u8)) -> (u8, u8, u8) {
     let mut current_color = current_color;
     let mut unique_colors = HashSet::new();
-    for i in buffer.chunks_exact(4) {
+    for i in buffer.as_chunks::<4>().0 {
         if i[0] != 0 {
             unique_colors.insert((i[1], i[2], i[3]));
         }

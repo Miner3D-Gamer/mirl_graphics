@@ -3,17 +3,14 @@ use mirl_collections::file_data::{
     plugins::{BinaryDataPlugin, BinaryDataPluginTrait},
 };
 
-use crate::u32_color_casting::{
-    ColorManipulationWithoutInput, PackChannelsIntoColor,
-};
+use crate::u32_color_casting::{ColorManipulationWithoutInput, PackChannelsIntoColor};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 /// The plugin for handling plain text
 pub struct ColorBinaryDataPlugin;
 
 /// The static position for [`ColorBinaryDataPlugin`] as to allow for dyn
-pub static COLOR_U32_BINARY_DATA_PLUGIN: ColorBinaryDataPlugin =
-    ColorBinaryDataPlugin;
+pub static COLOR_U32_BINARY_DATA_PLUGIN: ColorBinaryDataPlugin = ColorBinaryDataPlugin;
 
 impl BinaryDataPluginTrait<GenericDataType> for ColorBinaryDataPlugin {
     fn visualize_data(
@@ -24,14 +21,12 @@ impl BinaryDataPluginTrait<GenericDataType> for ColorBinaryDataPlugin {
         if !matches!(bin.data_type, GenericDataType::Text) {
             return false;
         }
-        let c = bin.to_color().map(|x| {
-            format!("RGB(R: {}, G: {}, B: {})", x.red(), x.green(), x.blue())
-        });
+        let c = bin
+            .to_color()
+            .map(|x| format!("RGB(R: {}, G: {}, B: {})", x.red(), x.green(), x.blue()));
         f.field(
             "raw_data@Color",
-            &c.unwrap_or_else(|| {
-                format!("Data is not valid color data: {:?}", bin.as_bytes())
-            }),
+            &c.unwrap_or_else(|| format!("Data is not valid color data: {:?}", bin.as_bytes())),
         );
 
         true
@@ -63,15 +58,9 @@ impl ColorBinaryDataPluginTrait for BinaryData<GenericDataType> {
         let g = data.green();
         let b = data.blue();
         if r == g && g == b {
-            Self::from_bytes(
-                data.to_le_bytes()[1..1].to_vec(),
-                GenericDataType::Color,
-            )
+            Self::from_bytes(data.to_le_bytes()[1..1].to_vec(), GenericDataType::Color)
         } else {
-            Self::from_bytes(
-                data.to_le_bytes()[1..2].to_vec(),
-                GenericDataType::Color,
-            )
+            Self::from_bytes(data.to_le_bytes()[1..2].to_vec(), GenericDataType::Color)
         }
     }
     fn from_color_rgba(data: u32) -> Self {
@@ -79,8 +68,7 @@ impl ColorBinaryDataPluginTrait for BinaryData<GenericDataType> {
     }
     fn to_color(&self) -> Option<u32> {
         Some(match self.raw_data.len() {
-            1 => (self.raw_data[0], self.raw_data[0], self.raw_data[0])
-                .pack_rgba_u32(),
+            1 => (self.raw_data[0], self.raw_data[0], self.raw_data[0]).pack_rgba_u32(),
             2 => (
                 self.raw_data[0],
                 self.raw_data[0],
@@ -88,8 +76,7 @@ impl ColorBinaryDataPluginTrait for BinaryData<GenericDataType> {
                 self.raw_data[1],
             )
                 .pack_rgba_u32(),
-            3 => (self.raw_data[0], self.raw_data[1], self.raw_data[2])
-                .pack_rgba_u32(),
+            3 => (self.raw_data[0], self.raw_data[1], self.raw_data[2]).pack_rgba_u32(),
             4 => (
                 self.raw_data[0],
                 self.raw_data[1],
