@@ -5,9 +5,12 @@ use crate::u32_color_casting::{PackChannelsIntoColor, UnpackColorIntoChannels};
 
 /// Convert a [u32] argb format into an [`image::Rgba<u8>`]
 #[must_use]
-pub const fn u32_to_image_rgba(color: u32) -> image::Rgba<u8> {
-    let (r, g, b, a) = (color).unpack_u32_rgba();
-    image::Rgba([r, g, b, 255 - a])
+pub const fn u32_to_image_rgba(color: u32) -> image::Rgba<u8>
+where
+    [u8; 4]: [const] std::convert::From<(u8, u8, u8, u8)>,
+{
+    let rgba = (color).unpack_u32_rgba();
+    image::Rgba(<[u8; 4]>::from(rgba))
 }
 /// Convert a [`image::Rgba<u8>`] into an [u32] argb
 #[must_use]

@@ -188,33 +188,37 @@ const impl<T: const IntoColor + Copy> PackChannelsIntoColor for (T, T, T, T) {
 /// # Panics
 /// When the input values don't
 macro_rules! rgb {
-    ($v:expr) => {
-        ($crate::u32_color_casting::check_color($v),).pack_argb_u32()
-    };
-    ($r:expr, $g:expr) => {
+    ($v:expr) => {{
+        use mirl_graphics::u32_color_casting::PackChannelsIntoColor;
+        ($crate::u32_color_casting::check_color($v),).pack_rgba_u32()
+    }};
+    ($r:expr, $g:expr) => {{
+        use mirl_graphics::u32_color_casting::PackChannelsIntoColor;
         (
             $crate::u32_color_casting::check_color($r),
             $crate::u32_color_casting::check_color($g),
         )
-            .pack_argb_u32()
-    };
-    ($r:expr, $g:expr, $b:expr) => {
+            .pack_rgba_u32()
+    }};
+    ($r:expr, $g:expr, $b:expr) => {{
+        use mirl_graphics::u32_color_casting::PackChannelsIntoColor;
         (
             $crate::u32_color_casting::check_color($r),
             $crate::u32_color_casting::check_color($g),
             $crate::u32_color_casting::check_color($b),
         )
-            .pack_argb_u32()
-    };
-    ($r:expr, $g:expr, $b:expr, $a:expr) => {
+            .pack_rgba_u32()
+    }};
+    ($r:expr, $g:expr, $b:expr, $a:expr) => {{
+        use mirl_graphics::u32_color_casting::PackChannelsIntoColor;
         (
             $crate::u32_color_casting::check_color($r),
             $crate::u32_color_casting::check_color($g),
             $crate::u32_color_casting::check_color($b),
             $crate::u32_color_casting::check_color($a),
         )
-            .pack_argb_u32()
-    };
+            .pack_rgba_u32()
+    }};
 }
 #[must_use]
 /// Check value isn't negative
@@ -227,7 +231,10 @@ pub const fn check_color<T: [const] TryInto<u32> + [const] std::marker::Destruct
 where
     <T as std::convert::TryInto<u32>>::Error: [const] std::marker::Destruct,
 {
-    assert!(v.clone().try_into().is_ok(), "negative not allowed");
+    assert!(
+        v.clone().try_into().is_ok(),
+        "negative color channel value not allowed"
+    );
     // Safety: What type can convert into u8 but not u32?
     unsafe { v.try_into().unwrap_unchecked() }
 }
