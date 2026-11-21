@@ -1,7 +1,7 @@
 use super::{rgb_u8_to_u32, u32_to_rgba_u8};
 
 
-#[mirl_derive::derive_all]
+#[mirl_macros::derive_all]
 /// A pixel made to be read FAST
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Pixel {

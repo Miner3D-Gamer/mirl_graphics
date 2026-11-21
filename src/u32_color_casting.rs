@@ -97,8 +97,9 @@ pub const fn rgba_alpha(color: u32) -> u32 {
 #[inline(always)]
 #[must_use]
 pub const fn pack_rgba_u32(r: u32, g: u32, b: u32, a: u32) -> u32 {
-    r << 24 | g << 16 | b << 8 | a
+    r << 24 | g << 16 | b << 8 | a // ((a & 0xFF) << 24) | ((b & 0xFF) << 16) | ((g & 0xFF) << 8) | (r & 0xFF)
 }
+
 #[allow(clippy::tuple_array_conversions)]
 const impl<T: const IntoColor + Copy> PackChannelsIntoColor for [T; 1] {
     fn pack_argb_u32(self) -> u32 {

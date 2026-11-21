@@ -2,26 +2,33 @@
 name = "mirl_graphics"
 version = "0.0.0-alpha"
 edition = "2024"
-repository.workspace = true
+repository = "https://github.com/Miner3D-Gamer/mirl_graphics"
 license.workspace = true
 authors.workspace = true
+rust-version.workspace = true
+maintenance.workspace = true
+
 [features]
 default = ["std"]
-all = ["image", "binary_data_plugin", "mirl_buffer/all", "mirl_collections?/all"]
+all = [
+    "image",
+    "binary_data_plugin",
+    "mirl_buffer/all",
+    "mirl_collections?/all",
+    "random",
+]
 _checking = ["all"]
 std = [
     "bitcode?/std",
     "mirl_buffer/std",
-    "rand?/std",
+    # "rand?/std",
     "serde?/std",
     "strum?/std",
     "wincode?/std",
     "zerocopy?/std",
 ]
-# Does nothing by itself. Needs another codec or enum flag to do something
-mirl_derive = ["dep:mirl_derive", "mirl_buffer/mirl_derive", "mirl_collections?/mirl_derive"]
 # Compatibility with ffi
-c_compatible = ["mirl_derive", "mirl_buffer/c_compatible", "mirl_collections?/c_compatible"]
+c_compatible = ["mirl_buffer/c_compatible", "mirl_collections?/c_compatible"]
 # Enables all codecs
 all_codecs = [
     "serde",
@@ -36,52 +43,39 @@ all_codecs = [
 # Codec stuff
 serde = [
     "dep:serde",
-    "mirl_derive",
     "bitcode?/serde",
     "mirl_buffer/serde",
     "mirl_collections?/serde",
-    "rand?/serde",
+    # "rand?/serde",
 ]
-bitcode = [
-    "dep:bitcode",
-    "mirl_derive",
-    "mirl_buffer/bitcode",
-    "mirl_collections?/bitcode",
-]
-wincode = [
-    "dep:wincode",
-    "mirl_derive",
-    "mirl_buffer/wincode",
-    "mirl_collections?/wincode",
-]
+bitcode = ["dep:bitcode", "mirl_buffer/bitcode", "mirl_collections?/bitcode"]
+wincode = ["dep:wincode", "mirl_buffer/wincode", "mirl_collections?/wincode"]
 compactly = [
     "dep:compactly",
-    "mirl_derive",
     "mirl_buffer/compactly",
     "mirl_collections?/compactly",
 ]
 zerocopy = [
     "dep:zerocopy",
-    "mirl_derive",
     "mirl_buffer/zerocopy",
     "mirl_collections?/zerocopy",
 ]
 # Enum extensions
-strum = ["dep:strum", "mirl_derive", "mirl_collections?/strum"]
-enum_ext = ["dep:enum_ext", "mirl_derive", "mirl_collections?/enum_ext"]
+strum = ["dep:strum", "mirl_collections?/strum"]
+enum_ext = ["dep:enum_ext", "mirl_collections?/enum_ext"]
 binary_data_plugin = ["dep:inventory", "mirl_collections"]
 # SVG?/resvg supports
 svg = ["dep:resvg"]
 # mirl_buffer = ["dep:mirl_buffer"]
 image = ["dep:image"]
-random = ["dep:rand", "std", "enum_ext?/random"]
+random = ["dep:getrandom", "std", "enum_ext?/random"]
 
 [dependencies]
 bitcode = { version = "0.6", optional = true, default-features = false, features = [
     "derive",
 ] }
 # Codec
-compactly = { version = "0.1", optional = true }
+compactly = { version = "0.2", optional = true }
 enum_ext = { version = "0.6", optional = true, default-features = false }
 # graphics & render
 image = { version = "0.25", optional = true, default-features = false }
@@ -91,13 +85,10 @@ inventory = { version = "0.3.24", optional = true }
 # mirl_input = { version = "0.0.0-alpha", optional = true }
 mirl_buffer = { version = "0.0.0-alpha" }
 mirl_collections = { version = "0.0.0-alpha", optional = true }
-mirl_derive = { version = "0.0.0-alpha", optional = true }
-# For random numbers
-rand = { version = "0.10", optional = true, default-features = false, features = [
-    "thread_rng",
-] }
+mirl_macros = { version = "0.0.0-alpha" }
+
 # Rasterize SVG
-resvg = { version = "0.47", optional = true, default-features = false }
+resvg = { version = "0.48", optional = true, default-features = false }
 serde = { version = "1.0", optional = true, default-features = false, features = [
     "derive",
 ] }
@@ -105,14 +96,17 @@ serde = { version = "1.0", optional = true, default-features = false, features =
 strum = { version = "0.28", optional = true, default-features = false, features = [
     "derive",
 ] }
-wincode = { version = "0.5", optional = true, features = ["derive"] }
+wincode = { version = "0.6", optional = true, features = ["derive"] }
 zerocopy = { version = "0.8", optional = true, default-features = false, features = [
     "float-nightly",
     "derive",
 ] }
-
+[target.'cfg(any(target_arch = "wasm32", target_arch = "wasm64"))'.dependencies]
+getrandom = { version = "0.4", features = ["wasm_js"], optional = true }
+[target.'cfg(not(any(target_arch = "wasm32", target_arch = "wasm64")))'.dependencies]
+getrandom = { version = "0.4", optional = true }
 [build-dependencies]
-mirl_build_tools = { workspace = true }
+mirl_build_tools = { version = "0.0.0-alpha" }
 
 [lints]
 workspace = true

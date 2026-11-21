@@ -70,7 +70,8 @@ pub fn adjust_brightness_hsl_of_rgb(color: u32, change: f32) -> u32 {
 #[allow(clippy::cast_possible_truncation)]
 /// Convert hsl space to rgb space
 pub const fn hsl_to_rgb_f32(hue: f32, saturation: f32, lightness: f32) -> (f32, f32, f32) {
-    let c = (1.0 - (2.0 * lightness - 1.0).abs()) * saturation;
+    // let c = (1.0 - (2.0 * lightness - 1.0).abs()) * saturation;
+    let c = (1.0 - 2.0f32.mul_add(lightness, -1.0).abs()) * saturation;
     let x = c * (1.0 - ((hue / 60.0) % 2.0 - 1.0).abs());
     let m = lightness - c / 2.0;
 
